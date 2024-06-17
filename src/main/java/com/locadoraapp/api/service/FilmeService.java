@@ -3,8 +3,12 @@ package com.locadoraapp.api.service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.locadoraapp.api.domain.filme.Filme;
 import com.locadoraapp.api.domain.filme.FilmeRequestDTO;
+import com.locadoraapp.api.domain.filme.FilmeResponseDTO;
 import com.locadoraapp.api.repositories.FilmeRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,6 +16,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -71,5 +76,14 @@ public class FilmeService {
         fos.close();
 
         return convertedFile;
+    }
+
+    public List<FilmeResponseDTO> getFilmes(int pagina, int tamanho) {
+
+        Pageable pageable = PageRequest.of(pagina, tamanho);
+        Page<Filme> filmesPage = filmeRepository.findAll(pageable);
+        return filmesPage.map(filme -> new FilmeResponseDTO(filme.getId(), filme.getTitulo(), filme.getGenero(),
+                filme.getSinopse(), filme.getLancamento(), filme.getImagemURL()))
+                .stream().toList();
     }
 }
